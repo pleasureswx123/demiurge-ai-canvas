@@ -1,0 +1,388 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: #0a0c10;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+#root {
+  width: 100%;
+  height: 100%;
+}
+
+/* React Flow Customizations */
+.react-flow__node {
+  cursor: default;
+}
+
+.react-flow__node-default,
+.react-flow__node-input,
+.react-flow__node-output,
+.react-flow__node-group {
+  padding: 0 !important;
+  background: transparent !important;
+  border: none !important;
+}
+
+.react-flow__node-GroupPanelNode,
+.react-flow__node-GroupPanelNode.selected,
+.react-flow__node-groupPanel,
+.react-flow__node-groupPanel.selected {
+  z-index: 0 !important;
+}
+
+.react-flow__node-GroupPanelNode .group-panel-handle,
+.react-flow__node-GroupPanelNode .group-panel-hit-area,
+.react-flow__node-groupPanel .group-panel-handle,
+.react-flow__node-groupPanel .group-panel-hit-area {
+  pointer-events: auto;
+}
+
+.react-flow__handle {
+  transition: transform 0.2s ease;
+}
+
+.node-handle-zone {
+  width: 80px !important;
+  height: 80px !important;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 50% !important;
+  cursor: grab !important;
+}
+
+.node-handle-zone:active {
+  cursor: grabbing !important;
+}
+
+.react-flow__edge-path {
+  stroke: #2d3139;
+  stroke-width: 2;
+}
+
+.react-flow__edge,
+.react-flow__edge-path {
+  pointer-events: all !important;
+}
+
+.edge-energy-preview,
+.edge-energy-glow,
+.edge-energy-strand {
+  pointer-events: none !important;
+}
+
+.edge-energy {
+  pointer-events: visibleStroke !important;
+}
+
+.edge-energy-base {
+  pointer-events: visibleStroke !important;
+}
+
+.edge-energy-base {
+  stroke: rgba(234, 241, 255, 0.58);
+  stroke-width: 3.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.edge-energy-glow {
+  stroke: rgba(126, 190, 255, 0.34);
+  stroke-width: 6.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: blur(2.2px);
+  opacity: 0.82;
+}
+
+.edge-energy-strand {
+  stroke: rgba(145, 195, 255, 0.92);
+  stroke-width: 2.35;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 6px rgba(105, 166, 255, 0.58));
+  will-change: stroke-dashoffset;
+}
+
+.edge-energy-tail {
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  will-change: stroke-dashoffset;
+}
+
+.edge-energy-strand-main {
+  stroke-dasharray: 210 150;
+  animation: edge-flow 4.8s linear infinite;
+}
+
+.edge-energy-strand-preview {
+  stroke: rgba(162, 210, 255, 0.92);
+  stroke-width: 2.1;
+  stroke-dasharray: 150 135;
+  animation: edge-flow 5.6s linear infinite;
+  filter: none;
+}
+
+.edge-energy-tail-main {
+  stroke: rgba(219, 238, 255, 0.96);
+  stroke-width: 1.1;
+  stroke-dasharray: 34 326;
+  animation: edge-flow-tail 4.8s linear infinite;
+  filter: drop-shadow(0 0 4px rgba(160, 207, 255, 0.44));
+}
+
+.edge-energy-tail-preview {
+  stroke: rgba(224, 242, 255, 0.92);
+  stroke-width: 0.95;
+  stroke-dasharray: 26 259;
+  animation: edge-flow-tail 5.6s linear infinite;
+  filter: none;
+}
+
+@keyframes edge-flow {
+  from {
+    stroke-dashoffset: 0;
+  }
+  to {
+    stroke-dashoffset: -720;
+  }
+}
+
+@keyframes edge-flow-tail {
+  from {
+    stroke-dashoffset: -68;
+  }
+  to {
+    stroke-dashoffset: -788;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .edge-energy-strand-main,
+  .edge-energy-strand-preview,
+  .edge-energy-tail-main,
+  .edge-energy-tail-preview {
+    animation: none;
+  }
+}
+
+.react-flow {
+  --xy-node-boxshadow-hover: none;
+  --xy-node-boxshadow-selected: none;
+}
+
+.react-flow__pane,
+.react-flow__viewport,
+.react-flow__renderer {
+  cursor: default !important;
+}
+
+.react-flow__pane.dragging {
+  cursor: grabbing !important;
+}
+
+.react-flow__node:hover,
+.react-flow__node.selected,
+.react-flow__node:focus,
+.react-flow__node:focus-visible {
+  box-shadow: none !important;
+}
+
+/* 视口整块 scale；节点内 CrispZoomRoot + 禁用空闲 perspective，避免行间字重不均 */
+.react-flow__viewport {
+  text-rendering: auto;
+}
+
+.crisp-zoom-inner {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+.react-flow__nodesselection-rect {
+  border: 1px solid rgba(255, 255, 255, 0.34) !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08) !important;
+}
+
+.single-node-selection-active .react-flow__nodesselection-rect {
+  display: none !important;
+}
+
+.multi-selection-overlay {
+  position: fixed;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: 14px;
+  border: 1px dashed rgba(255, 255, 255, 0.42);
+  background: rgba(255, 255, 255, 0.048);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04),
+    0 0 0 1px rgba(255, 255, 255, 0.03);
+  -webkit-backdrop-filter: blur(1px);
+  backdrop-filter: blur(1px);
+}
+
+.react-flow__controls-button {
+  border-bottom: 1px solid #2d3139 !important;
+  background: #1c1f26 !important;
+}
+
+.react-flow__controls-button svg {
+  fill: #94a3b8 !important;
+}
+
+.react-flow__attribution {
+  display: none;
+}
+
+.bulk-selection-handle {
+  position: fixed;
+  z-index: 176;
+  width: 34px;
+  height: 34px;
+  transform: translate(-50%, -50%);
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(36, 38, 44, 0.95);
+  color: #f4f7fb;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.32),
+    0 0 0 1px rgba(255, 255, 255, 0.04);
+  transition:
+    transform 120ms ease,
+    border-color 120ms ease,
+    background-color 120ms ease,
+    box-shadow 120ms ease;
+  cursor: grab;
+}
+
+.bulk-selection-handle:hover,
+.bulk-selection-handle.is-active {
+  border-color: rgba(255, 255, 255, 0.42);
+  background: rgba(48, 52, 60, 0.98);
+  box-shadow:
+    0 10px 28px rgba(0, 0, 0, 0.42),
+    0 0 0 1px rgba(255, 255, 255, 0.06),
+    0 0 18px rgba(95, 151, 246, 0.18);
+}
+
+.bulk-selection-handle:active {
+  cursor: grabbing;
+  transform: translate(-50%, -50%) scale(0.96);
+}
+
+.loading-ellipsis {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.loading-ellipsis-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.96);
+  animation: loading-ellipsis-pulse 1.05s ease-in-out infinite;
+}
+
+.loading-ellipsis-dot:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.loading-ellipsis-dot:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.generation-breathing-backdrop {
+  animation: generation-breathing-brightness 4.8s ease-in-out infinite;
+}
+
+@keyframes generation-breathing-brightness {
+  0%, 100% {
+    filter: blur(12px) brightness(0.38) saturate(0.9);
+  }
+  50% {
+    filter: blur(12px) brightness(0.56) saturate(0.96);
+  }
+}
+
+@keyframes loading-ellipsis-pulse {
+  0%, 100% {
+    opacity: 0.2;
+    transform: scale(0.72);
+  }
+  35% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.connection-hover-glow {
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.connection-hover-glow::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 2px;
+  border-radius: inherit;
+  background:
+    linear-gradient(115deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.05) 18%,
+      rgba(255, 255, 255, 0.52) 34%,
+      rgba(255, 255, 255, 0.08) 50%,
+      rgba(255, 255, 255, 0) 68%,
+      rgba(255, 255, 255, 0.3) 82%,
+      rgba(255, 255, 255, 0) 100%);
+  background-size: 220% 220%;
+  animation: connection-border-flow 2.4s linear infinite;
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+}
+
+.connection-hover-glow::after {
+  content: '';
+  position: absolute;
+  inset: -10px;
+  border-radius: inherit;
+  background: radial-gradient(circle at center, rgba(255, 255, 255, 0.11), rgba(255, 255, 255, 0) 68%);
+  filter: blur(14px);
+  opacity: 0.48;
+}
+
+@keyframes connection-border-flow {
+  0% {
+    background-position: 200% 50%;
+  }
+  100% {
+    background-position: -20% 50%;
+  }
+}
