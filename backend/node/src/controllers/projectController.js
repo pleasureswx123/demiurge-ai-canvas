@@ -38,7 +38,7 @@ export async function handleProjectStorageApi(req, res, pathname) {
       if (!sanitizeSlug(slug)) continue;
       const dir = path.join(PROJECTS_ROOT, slug);
       const jsonPath = path.join(dir, 'project_data.json');
-      let projectData = null;
+      let projectData;
       try {
         const raw = await fs.readFile(jsonPath, 'utf8');
         projectData = JSON.parse(raw);

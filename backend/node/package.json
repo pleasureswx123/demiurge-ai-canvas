@@ -6,11 +6,18 @@
   "scripts": {
     "dev": "node --watch src/main.js",
     "start": "node src/main.js",
-    "lint": "node scripts/check-syntax.mjs"
+    "check:syntax": "node scripts/check-syntax.mjs",
+    "lint": "eslint . && npm run check:syntax",
+    "test": "node --test",
+    "verify": "npm run lint && npm test"
   },
   "dependencies": {
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "openai": "^6.34.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.4.0"
   }
 }

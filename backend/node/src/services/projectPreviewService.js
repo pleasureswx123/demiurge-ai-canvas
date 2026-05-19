@@ -274,7 +274,7 @@ export async function ensureVideoPoster(videoAbsPath, projectDir) {
   const hash = createHash('sha1').update(relKey).digest('hex').slice(0, 12);
   const safeKey = `${base.replace(/[^a-zA-Z0-9._-]/g, '_')}_${hash}`;
   const posterPath = path.join(thumbsDir, `${safeKey}.jpg`);
-  let need = true;
+  let need;
   try {
     const [videoStat, posterStat] = await Promise.all([fs.stat(videoAbsPath), fs.stat(posterPath)]);
     need = videoStat.mtimeMs > posterStat.mtimeMs;

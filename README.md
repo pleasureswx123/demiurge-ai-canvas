@@ -270,11 +270,11 @@ cd frontend
 npm run build
 ```
 
-Node 语法检查：
+Node 服务校验：
 
 ```powershell
 cd backend\node
-npm run lint
+npm run verify
 ```
 
 Python 语法检查：

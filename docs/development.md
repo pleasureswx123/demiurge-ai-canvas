@@ -69,7 +69,7 @@ npm run build
 
 ```powershell
 cd backend\node
-npm run lint
+npm run verify
 ```
 
 ```powershell

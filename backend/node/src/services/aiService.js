@@ -1,4 +1,5 @@
 import { arkApiKey, arkClient, deepseekApiKey, deepseekClient } from '../clients/modelClients.js';
+import { badRequest, internalError } from '../utils/errors.js';
 
 const TRANSLATE_SYSTEM_PROMPT =
   '你是一个专业的翻译助手。请自动识别用户输入的语言。如果是中文，请将其翻译成适合作为 AI 绘画提示词的英文；如果是英文，请将其翻译成流畅的中文。请只返回翻译后的纯文本结果，绝对不要包含任何解释、引号或多余的对话。';
@@ -15,17 +16,13 @@ export function getModelHealth() {
 }
 
 export async function translateText(text) {
-  if (!deepseekApiKey || !deepseekClient) {
-    const error = new Error('Missing DEEPSEEK_API_KEY. Please set it in backend/node/.env.local');
-    error.statusCode = 500;
-    throw error;
-  }
-
   const normalizedText = String(text || '').trim();
   if (!normalizedText) {
-    const error = new Error('Text is required');
-    error.statusCode = 400;
-    throw error;
+    throw badRequest('Text is required');
+  }
+
+  if (!deepseekApiKey || !deepseekClient) {
+    throw internalError('Missing DEEPSEEK_API_KEY. Please set it in backend/node/.env.local');
   }
 
   const completion = await deepseekClient.chat.completions.create({
@@ -43,9 +40,7 @@ export async function translateText(text) {
 export async function analyzeText({ prompt, model: requestedModel, inputImages = [] }) {
   const normalizedPrompt = String(prompt || '').trim();
   if (!normalizedPrompt) {
-    const error = new Error('Prompt is required');
-    error.statusCode = 400;
-    throw error;
+    throw badRequest('Prompt is required');
   }
 
   const selectedModel = String(requestedModel || '').trim() || 'Seed-2.0-lite';
@@ -58,17 +53,13 @@ export async function analyzeText({ prompt, model: requestedModel, inputImages =
 
   if (selectedModel === 'Seed-2.0-lite') {
     if (!arkApiKey || !arkClient) {
-      const error = new Error('Missing ARK_API_KEY. Please set it in backend/node/.env.local');
-      error.statusCode = 500;
-      throw error;
+      throw internalError('Missing ARK_API_KEY. Please set it in backend/node/.env.local');
     }
     client = arkClient;
     model = SEED_ANALYSIS_MODEL;
   } else {
     if (!deepseekApiKey || !deepseekClient) {
-      const error = new Error('Missing DEEPSEEK_API_KEY. Please set it in backend/node/.env.local');
-      error.statusCode = 500;
-      throw error;
+      throw internalError('Missing DEEPSEEK_API_KEY. Please set it in backend/node/.env.local');
     }
     client = deepseekClient;
     model = ANALYZE_FALLBACK_MODEL;
