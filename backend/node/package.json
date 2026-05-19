@@ -1,0 +1,16 @@
+{
+  "name": "demiurge-node-api",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch src/main.js",
+    "start": "node src/main.js",
+    "lint": "node scripts/check-syntax.mjs"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "openai": "^6.34.0"
+  }
+}

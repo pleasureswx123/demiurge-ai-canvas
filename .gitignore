@@ -25,9 +25,6 @@ tools/ffmpeg-dist/
 __pycache__/
 *.py[cod]
 
-# Nested local copies
-my-canvas/
-
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
