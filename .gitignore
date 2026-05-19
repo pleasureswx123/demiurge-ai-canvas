@@ -13,10 +13,10 @@ dist-ssr
 *.local
 
 # Local user data and generated media
-outputs/
-projects/
-material-library/assets/
-material-library/*.json
+/outputs/
+/projects/
+/material-library/assets/
+/material-library/*.json
 
 # Bundled/generated binaries
 tools/ffmpeg-dist/
