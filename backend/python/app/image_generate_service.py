@@ -21,6 +21,7 @@ from core.config import (
     MATERIAL_LIBRARY_ROOT,
     OUTPUTS_DIR,
     PROJECTS_ROOT,
+    PY_SERVICE_HOST,
     PY_SERVICE_PORT,
     load_env,
 )
@@ -2094,8 +2095,8 @@ class ImageGenerateHandler(BaseHTTPRequestHandler):
 
 
 if __name__ == "__main__":
-    server = ThreadingHTTPServer(("127.0.0.1", PY_SERVICE_PORT), ImageGenerateHandler)
-    print(f"Python media generate service running at http://127.0.0.1:{PY_SERVICE_PORT}")
+    server = ThreadingHTTPServer((PY_SERVICE_HOST, PY_SERVICE_PORT), ImageGenerateHandler)
+    print(f"Python media generate service running at http://{PY_SERVICE_HOST}:{PY_SERVICE_PORT}")
     print(f"Image model routes: {list(IMAGE_MODEL_MAP.keys())}")
     print("Video model routes: ['seedance-2.0']")
     server.serve_forever()

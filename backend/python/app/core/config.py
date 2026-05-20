@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 
 PY_SERVICE_PORT = int(os.environ.get("PY_MEDIA_API_PORT", "3300"))
+PY_SERVICE_HOST = os.environ.get("PY_MEDIA_API_HOST", "127.0.0.1")
 MEDIA_SERVICE_REVISION = "gpt-image2-env-2026-04"
 
 SERVICE_ROOT = Path(__file__).resolve().parents[2]
