@@ -1,7 +1,7 @@
 import OpenAI from 'openai';
 import '../config/env.js';
 
-export const DEEPSEEK_BASE_URL = 'https://api.deepseek.com';
+export const DEEPSEEK_BASE_URL = process.env.DEEPSEEK_BASE_URL || 'https://api.deepseek.com';
 export const ARK_BASE_URL = process.env.ARK_BASE_URL || 'https://ark.cn-beijing.volces.com/api/v3';
 
 export const deepseekApiKey = process.env.DEEPSEEK_API_KEY;
