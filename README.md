@@ -228,6 +228,215 @@ flowchart LR
   Gateway --> Browser
 ```
 
+### 大模型能力地图
+
+当前项目把模型能力分成三类：文本/分析、图片生成、视频生成。前端节点只负责选择模型和组织参数，真正的模型调用发生在后端，避免 API Key 暴露到浏览器。
+
+| 能力类型 | 前端节点/入口 | UI 模型或功能名 | 实际模型/供应商 | 后端服务 | 作用环节 |
+| --- | --- | --- | --- | --- | --- |
+| 翻译 | 文本节点、图片节点、视频节点的翻译按钮 | DeepSeek | `deepseek-chat` | `node-api` | 将中文提示词翻译成适合绘画/视频生成的英文，或将英文翻译成中文 |
+| 文本/图文分析 | 文本节点分析能力 | Seed-2.0-lite | `doubao-seed-2-0-lite-260215` via Ark | `node-api` | 对文本和最多 4 张图片做中文结构化分析 |
+| 文本/图文分析备用 | 文本节点分析能力 | DeepSeek fallback | `DEEPSEEK_ANALYSIS_MODEL`，默认 `deepseek-chat` | `node-api` | 当用户选择非 Seed-2.0-lite 分析模型时，用 DeepSeek 执行分析 |
+| 图片生成 | 图片节点 | Seedream-5.0 | `doubao-seedream-5-0-260128` via Volcengine Ark | `python-media-api` | 根据提示词、比例、尺寸和参考图生成图片 |
+| 图片生成 | 图片节点 | Nano Banana 2 | `gemini-3.1-flash-image-preview` via VectorEngine OpenAI-compatible API | `python-media-api` | 使用 Gemini 图像模型能力生成图片 |
+| 图片生成 | 图片节点 | Nano banana pro | `gemini-3-pro-image-preview` via VectorEngine OpenAI-compatible API | `python-media-api` | 默认图片生成模型，用于更高质量图片生成 |
+| 图片生成/编辑 | 图片节点 | GPT Image 2 | `gpt-image-2` via OpenAI Images-compatible API | `python-media-api` | 支持纯文本生图，也支持带输入图的图片编辑/生成 |
+| 视频生成 | 视频节点 | Wan 2.7 I2V | `wan2.7-i2v` via DashScope | `python-media-api` | 图片转视频，要求参考图，提交异步视频任务 |
+| 视频生成 | 视频节点 | Seedance 2.0 | `seed-2` / 环境变量分辨率映射 via Xunke | `python-media-api` | 文生视频或图生视频，支持多参考图 |
+| 视频生成 | 视频节点 | Seedance 2.0 Fast | `seed-2-fast` / 环境变量分辨率映射 via Xunke | `python-media-api` | 更快的视频生成通道，支持文生视频或图生视频 |
+| 视频生成备用 | 视频节点 | Seedance Ark fallback | `doubao-seedance-2-0-260128`、`doubao-seedance-1-5-pro-251215` via Ark | `python-media-api` | 当视频 provider 配置为 Ark 时提交 Seedance 视频任务 |
+| 主体/人脸审核 | 图片节点、素材库、视频节点前置检查 | Seedance face review | Xunke Seedance 审核接口 | `python-media-api` | 在图片作为 Seedance 参考前做主体/人脸审核，避免视频生成阶段失败 |
+
+模型配置主要分布在：
+
+- `frontend/src/features/generation/imageGenerationConfig.js`：图片节点可选模型、比例、尺寸和 UI 默认值。
+- `frontend/src/features/generation/videoGenerationConfig.js`：视频节点可选模型、分辨率、时长和参考图约束。
+- `backend/node/src/services/aiService.js`：DeepSeek 翻译、Seed/DeepSeek 分析。
+- `backend/python/app/image_generate_service.py`：图片/视频模型路由、供应商调用、任务轮询和媒体保存。
+
+### 模型调用关系图
+
+```mermaid
+flowchart LR
+  subgraph Frontend["Frontend 节点层"]
+    TextNode["文本节点"]
+    ImageNode["图片节点"]
+    VideoNode["视频节点"]
+    MaterialPanel["素材库 / 主体素材"]
+  end
+
+  subgraph NodeApi["node-api 文本能力"]
+    Translate["/api/node/translate"]
+    Analyze["/api/node/text-analyze"]
+  end
+
+  subgraph MediaApi["python-media-api 媒体能力"]
+    ImageGen["/api/media/generate-image"]
+    VideoGen["/api/media/generate-video"]
+    VideoTask["/api/media/video-task/{taskId}"]
+    FaceReview["/api/media/seedance-face-review"]
+  end
+
+  DeepSeek["DeepSeek\ndeepseek-chat"]
+  SeedLite["Ark Seed\n doubao-seed-2-0-lite-260215"]
+  Seedream["Ark Seedream\n doubao-seedream-5-0-260128"]
+  VectorEngine["VectorEngine\n gemini-3.1 / gemini-3-pro image"]
+  GPTImage["OpenAI Images compatible\n gpt-image-2"]
+  DashScope["DashScope\n wan2.7-i2v"]
+  Xunke["Xunke\n seed-2 / seed-2-fast"]
+  ArkVideo["Ark Seedance\n doubao-seedance-*"]
+
+  TextNode --> Translate --> DeepSeek
+  TextNode --> Analyze --> SeedLite
+  Analyze --> DeepSeek
+
+  ImageNode --> Translate
+  ImageNode --> ImageGen
+  ImageGen --> Seedream
+  ImageGen --> VectorEngine
+  ImageGen --> GPTImage
+
+  VideoNode --> Translate
+  VideoNode --> VideoGen
+  VideoNode --> VideoTask
+  VideoGen --> DashScope
+  VideoGen --> Xunke
+  VideoGen --> ArkVideo
+  VideoTask --> DashScope
+  VideoTask --> Xunke
+  VideoTask --> ArkVideo
+
+  ImageNode --> FaceReview --> Xunke
+  MaterialPanel --> FaceReview
+  VideoNode --> FaceReview
+```
+
+### 模型时序图：文本翻译与分析
+
+```mermaid
+sequenceDiagram
+  participant U as 创作者
+  participant Node as 前端文本/图片/视频节点
+  participant G as web-gateway
+  participant N as node-api
+  participant DeepSeek as DeepSeek deepseek-chat
+  participant ArkSeed as Ark Seed-2.0-lite
+
+  alt 翻译提示词
+    U->>Node: 点击翻译
+    Node->>G: POST /api/node/translate
+    G->>N: 代理翻译请求
+    N->>DeepSeek: chat.completions.create(model=deepseek-chat)
+    DeepSeek-->>N: 翻译后的纯文本
+    N-->>Node: { translated }
+    Node->>Node: 写回提示词输入框
+  else 文本/图文分析
+    U->>Node: 输入分析要求并选择模型
+    Node->>G: POST /api/node/text-analyze
+    G->>N: 代理分析请求
+    alt 选择 Seed-2.0-lite
+      N->>ArkSeed: chat.completions.create(model=doubao-seed-2-0-lite-260215)
+      ArkSeed-->>N: 结构化中文分析
+    else 选择 DeepSeek fallback
+      N->>DeepSeek: chat.completions.create(model=deepseek-chat 或 DEEPSEEK_ANALYSIS_MODEL)
+      DeepSeek-->>N: 结构化中文分析
+    end
+    N-->>Node: { text }
+    Node->>Node: 展示分析结果
+  end
+```
+
+### 模型时序图：图片节点生成
+
+```mermaid
+sequenceDiagram
+  participant U as 创作者
+  participant Img as 图片节点
+  participant G as web-gateway
+  participant M as python-media-api
+  participant Ark as Ark Seedream
+  participant VE as VectorEngine Gemini Image
+  participant GPT as GPT Image 2
+  participant P as projects/
+
+  U->>Img: 选择图片模型、比例、尺寸、参考图并点击生成
+  Img->>G: POST /api/media/generate-image
+  G->>M: 代理图片生成请求
+  M->>M: normalize_ui_image_model + resolve_image_model
+  alt Seedream-5.0
+    M->>Ark: /images/generations model=doubao-seedream-5-0-260128
+    Ark-->>M: 图片结果
+  else Nano Banana 2 / Nano banana pro
+    M->>VE: /v1/chat/completions model=gemini-3.1 或 gemini-3-pro image
+    VE-->>M: 图片结果
+  else GPT Image 2
+    alt 无输入图
+      M->>GPT: /v1/images/generations model=gpt-image-2
+    else 有输入图
+      M->>GPT: /v1/images/edits model=gpt-image-2
+    end
+    GPT-->>M: 图片结果
+  end
+  M->>P: 保存生成图片到工程 assets
+  M-->>Img: 返回图片 URL、模型元数据和保存路径
+  Img->>Img: 更新节点预览和工程状态
+```
+
+### 模型时序图：视频节点生成与轮询
+
+```mermaid
+sequenceDiagram
+  participant U as 创作者
+  participant Vid as 视频节点
+  participant G as web-gateway
+  participant M as python-media-api
+  participant Xunke as Xunke Seedance
+  participant Dash as DashScope Wan
+  participant Ark as Ark Seedance
+  participant P as projects/
+
+  U->>Vid: 选择视频模型、时长、分辨率、参考图并点击生成
+  Vid->>G: POST /api/media/generate-video
+  G->>M: 代理视频任务提交
+  M->>M: resolve_video_provider + resolve provider model
+
+  alt Seedance 2.0 / Seedance 2.0 Fast
+    M->>Xunke: POST /v1/videos model=seed-2 或 seed-2-fast
+    Xunke-->>M: task_id + task_status
+  else Wan 2.7 I2V
+    M->>Dash: POST video-generation/video-synthesis model=wan2.7-i2v
+    Dash-->>M: task_id + task_status
+  else Ark Seedance fallback
+    M->>Ark: POST /contents/generations/tasks model=doubao-seedance-*
+    Ark-->>M: task_id + task_status
+  end
+
+  M-->>Vid: 返回 task_id
+
+  loop 前端定时轮询
+    Vid->>G: GET /api/media/video-task/{taskId}
+    G->>M: 代理任务查询
+    alt Xunke task
+      M->>Xunke: 查询视频任务
+      Xunke-->>M: PENDING/RUNNING/SUCCEEDED/FAILED
+    else DashScope task
+      M->>Dash: 查询视频任务
+      Dash-->>M: PENDING/RUNNING/SUCCEEDED/FAILED
+    else Ark task
+      M->>Ark: 查询视频任务
+      Ark-->>M: queued/running/succeeded/failed
+    end
+    alt 成功
+      M->>P: 下载并保存视频到工程 assets
+      M-->>Vid: 返回 video-file URL
+    else 未完成
+      M-->>Vid: 返回任务状态
+    else 失败
+      M-->>Vid: 返回错误信息
+    end
+  end
+```
+
 ### 关键业务时序图：打开并保存工程
 
 ```mermaid
