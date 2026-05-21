@@ -814,6 +814,8 @@ OUTPUTS_ROOT=outputs
 
 Docker 部署中使用绝对路径形式的容器内数据卷路径，例如 `/app/projects`。
 
+Node 服务会在生成视频封面/缩略图时调用 `ffmpeg`。本地开发可以在 `backend/node/.env.local` 里设置 `FFMPEG_PATH` 指向本机或项目内置的 ffmpeg；如果不设置，Node 会先尝试项目内置 `tools/ffmpeg-dist/.../ffmpeg`，再尝试系统 `PATH` 里的 `ffmpeg`。Docker 部署时，`node-api` 镜像会安装 Linux 版 ffmpeg，容器内直接使用 `PATH` 里的 `ffmpeg`。
+
 ## 本地数据目录
 
 ```text

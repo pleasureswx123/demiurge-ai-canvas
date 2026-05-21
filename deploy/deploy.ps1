@@ -37,10 +37,28 @@ function Invoke-Checked {
 
 function Invoke-Remote {
   param([string]$Command)
-  Write-Host ">> ssh $remote `"$Command`""
-  ssh $remote $Command
-  if ($LASTEXITCODE -ne 0) {
-    throw "Remote command failed with exit code $LASTEXITCODE"
+  $scriptName = "demiurge-remote-$([Guid]::NewGuid().ToString("N")).sh"
+  $localScript = Join-Path ([System.IO.Path]::GetTempPath()) $scriptName
+  $remoteScript = "/tmp/$scriptName"
+  try {
+    $normalizedCommand = ($Command -replace "`r`n", "`n") -replace "`r", "`n"
+    [System.IO.File]::WriteAllText($localScript, $normalizedCommand, [System.Text.UTF8Encoding]::new($false))
+
+    Write-Host ">> scp remote script $remoteScript"
+    scp $localScript "$remote`:$remoteScript"
+    if ($LASTEXITCODE -ne 0) {
+      throw "remote script upload failed with exit code $LASTEXITCODE"
+    }
+
+    Write-Host ">> ssh $remote bash $remoteScript"
+    ssh $remote "bash '$remoteScript'; status=`$?; rm -f '$remoteScript'; exit `$status"
+    if ($LASTEXITCODE -ne 0) {
+      throw "Remote command failed with exit code $LASTEXITCODE"
+    }
+  } finally {
+    if (Test-Path $localScript) {
+      Remove-Item -LiteralPath $localScript -Force
+    }
   }
 }
 

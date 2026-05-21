@@ -7,6 +7,9 @@ WORKDIR /app/backend/node
 
 ENV NODE_ENV=production
 
+RUN sed -i 's|https://dl-cdn.alpinelinux.org/alpine|https://mirrors.tuna.tsinghua.edu.cn/alpine|g' /etc/apk/repositories \
+  && apk add --no-cache ffmpeg
+
 RUN npm config set registry ${NPM_REGISTRY} \
   && npm config set replace-registry-host always \
   && npm config set audit false \
