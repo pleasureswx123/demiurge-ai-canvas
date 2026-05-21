@@ -235,7 +235,7 @@ flowchart LR
 | 能力类型 | 前端节点/入口 | UI 模型或功能名 | 实际模型/供应商 | 后端服务 | 作用环节 |
 | --- | --- | --- | --- | --- | --- |
 | 翻译 | 文本节点、图片节点、视频节点的翻译按钮 | DeepSeek | `deepseek-chat` | `node-api` | 将中文提示词翻译成适合绘画/视频生成的英文，或将英文翻译成中文 |
-| 文本/图文分析 | 文本节点分析能力 | Seed-2.0-lite | `doubao-seed-2-0-lite-260215` via Ark | `node-api` | 对文本和最多 4 张图片做中文结构化分析 |
+| 文本/图文分析 | 文本节点分析能力 | Seed-2.0-lite | `ARK_ANALYSIS_MODEL`，默认 `doubao-seed-2-0-lite-260215` via Ark | `node-api` | 对文本和最多 4 张图片做中文结构化分析 |
 | 文本/图文分析备用 | 文本节点分析能力 | DeepSeek fallback | `DEEPSEEK_ANALYSIS_MODEL`，默认 `deepseek-chat` | `node-api` | 当用户选择非 Seed-2.0-lite 分析模型时，用 DeepSeek 执行分析 |
 | 图片生成 | 图片节点 | Seedream-5.0 | `doubao-seedream-5-0-260128` via Volcengine Ark | `python-media-api` | 根据提示词、比例、尺寸和参考图生成图片 |
 | 图片生成 | 图片节点 | Nano Banana 2 | `gemini-3.1-flash-image-preview` via VectorEngine OpenAI-compatible API | `python-media-api` | 使用 Gemini 图像模型能力生成图片 |
