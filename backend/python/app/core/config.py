@@ -38,7 +38,7 @@ def resolve_service_path(raw: str | None, fallback: Path) -> Path:
         return fallback.resolve()
     candidate = Path(raw)
     if not candidate.is_absolute():
-        candidate = SERVICE_ROOT / candidate
+        candidate = REPO_ROOT / candidate
     return candidate.resolve()
 
 

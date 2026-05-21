@@ -804,6 +804,16 @@ Copy-Item backend\python\.env.example backend\python\.env.local
 
 不要把 `.env.local`、API Key、用户本地数据提交到仓库。
 
+`PROJECTS_ROOT`、`MATERIAL_LIBRARY_ROOT`、`OUTPUTS_ROOT` 可以使用绝对路径，也可以使用相对路径。相对路径统一按仓库根目录解析，例如：
+
+```text
+PROJECTS_ROOT=projects
+MATERIAL_LIBRARY_ROOT=material-library
+OUTPUTS_ROOT=outputs
+```
+
+Docker 部署中使用绝对路径形式的容器内数据卷路径，例如 `/app/projects`。
+
 ## 本地数据目录
 
 ```text

@@ -1,11 +1,11 @@
 import { existsSync } from 'node:fs';
 import path from 'node:path';
-import { NODE_SERVICE_ROOT, resolveRepoPath } from './paths.js';
+import { resolveRepoPath } from './paths.js';
 
 function resolveConfiguredPath(value, fallback) {
   const raw = String(value || '').trim();
   if (!raw) return fallback;
-  return path.isAbsolute(raw) ? raw : path.resolve(NODE_SERVICE_ROOT, raw);
+  return path.isAbsolute(raw) ? raw : resolveRepoPath(raw);
 }
 
 export const PROJECTS_ROOT = resolveConfiguredPath(process.env.PROJECTS_ROOT, resolveRepoPath('projects'));
