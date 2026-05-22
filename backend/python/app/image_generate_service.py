@@ -106,7 +106,7 @@ _KKAI_STATUS_MAP: dict[str, str] = {
     "canceled": "FAILED",
 }
 GEMINI_ASPECT_RATIO_BY_UI = {
-    "鑷€傚簲": "1:1",
+    "自适应": "1:1",
     "1:1": "1:1",
     "9:16": "9:16",
     "16:9": "16:9",
@@ -122,12 +122,7 @@ GEMINI_ASPECT_RATIO_BY_UI = {
 
 def resolve_ark_api_key() -> str:
     load_env()
-    return (
-        os.environ.get("ARK_API_KEY")
-        or os.environ.get("VOLCENGINE_ARK_API_KEY")
-        or os.environ.get("DOUBAO_API_KEY")
-        or ""
-    ).strip()
+    return (os.environ.get("ARK_API_KEY") or "").strip()
 
 
 def resolve_gemini_api_key() -> str:
@@ -142,38 +137,23 @@ def resolve_dashscope_api_key() -> str:
 
 def resolve_kkai_api_key() -> str:
     load_env()
-    return (
-        os.environ.get("XUNKE_API_KEY")
-        or os.environ.get("XUNKECLOUD_API_KEY")
-        or os.environ.get("SEEDANCE_API_KEY")
-        or ""
-    ).strip()
+    return (os.environ.get("XUNKE_API_KEY") or "").strip()
 
 
 def resolve_kkai_asset_token() -> str:
     load_env()
-    return (
-        os.environ.get("XUNKE_ASSET_TOKEN")
-        or os.environ.get("XUNKECLOUD_ASSET_TOKEN")
-        or resolve_kkai_api_key()
-        or ""
-    ).strip()
+    return (os.environ.get("XUNKE_ASSET_TOKEN") or resolve_kkai_api_key() or "").strip()
 
 
 def resolve_kkai_base_url() -> str:
     load_env()
-    return (
-        os.environ.get("XUNKE_BASE_URL")
-        or os.environ.get("XUNKECLOUD_BASE_URL")
-        or XUNKE_BASE_URL
-    ).strip().rstrip("/")
+    return (os.environ.get("XUNKE_BASE_URL") or XUNKE_BASE_URL).strip().rstrip("/")
 
 
 def resolve_kkai_asset_base_url() -> str:
     load_env()
     return (
         os.environ.get("XUNKE_ASSET_BASE_URL")
-        or os.environ.get("XUNKECLOUD_ASSET_BASE_URL")
         or os.environ.get("XUNKE_BASE_URL")
         or XUNKE_BASE_URL
     ).strip().rstrip("/")
@@ -279,23 +259,12 @@ def resolve_ark_video_model(ui_model: str = "seedance-2.0", provider_model_hint:
 
 def resolve_vectorengine_api_key() -> str:
     load_env()
-    return (
-        os.environ.get("VECTORENGINE_API_KEY")
-        or os.environ.get("GEMINI_RELAY_API_KEY")
-        or os.environ.get("IMAGE_API_KEY")
-        or ""
-    ).strip()
+    return (os.environ.get("VECTORENGINE_API_KEY") or "").strip()
 
 
 def resolve_vectorengine_base_url() -> str:
     load_env()
-    return (
-        os.environ.get("VECTORENGINE_BASE_URL")
-        or os.environ.get("GEMINI_RELAY_BASE_URL")
-        or os.environ.get("IMAGE_API_BASE_URL")
-        or VECTORENGINE_BASE_URL
-        or ""
-    ).strip().rstrip("/")
+    return (os.environ.get("VECTORENGINE_BASE_URL") or VECTORENGINE_BASE_URL).strip().rstrip("/")
 
 
 def resolve_vectorengine_model(default_model: str = "gemini-3-pro-image-preview") -> str:
@@ -310,7 +279,6 @@ def resolve_vectorengine_model(default_model: str = "gemini-3-pro-image-preview"
         return alias_value
     specific = (
         os.environ.get(f"VECTORENGINE_MODEL_{str(default_model).upper().replace('.', '_').replace('-', '_')}")
-        or os.environ.get(f"GEMINI_RELAY_MODEL_{str(default_model).upper().replace('.', '_').replace('-', '_')}")
         or ""
     ).strip()
     if specific:
@@ -319,8 +287,6 @@ def resolve_vectorengine_model(default_model: str = "gemini-3-pro-image-preview"
         return str(default_model).strip()
     return (
         os.environ.get("VECTORENGINE_MODEL")
-        or os.environ.get("GEMINI_RELAY_MODEL")
-        or os.environ.get("IMAGE_API_MODEL")
         or "gemini-3-pro-image-preview"
     ).strip()
 
@@ -329,8 +295,6 @@ def resolve_vectorengine_endpoint(default_model: str, default_endpoint: str = ""
     load_env()
     custom = (
         os.environ.get("VECTORENGINE_ENDPOINT")
-        or os.environ.get("GEMINI_RELAY_ENDPOINT")
-        or os.environ.get("IMAGE_API_ENDPOINT")
         or ""
     ).strip()
     if custom:
@@ -345,9 +309,6 @@ def resolve_gpt_image_2_api_key() -> str:
     return (
         os.environ.get("GPT_IMAGE_2_API_KEY")
         or os.environ.get("VECTORENGINE_API_KEY")
-        or os.environ.get("GEMINI_RELAY_API_KEY")
-        or os.environ.get("OPENAI_IMAGE_API_KEY")
-        or os.environ.get("OPENAI_API_KEY")
         or ""
     ).strip()
 
@@ -356,10 +317,7 @@ def resolve_gpt_image_2_base_url() -> str:
     load_env()
     return (
         os.environ.get("GPT_IMAGE_2_BASE_URL")
-        or os.environ.get("OPENAI_IMAGE_BASE_URL")
-        or os.environ.get("OPENAI_BASE_URL")
         or os.environ.get("VECTORENGINE_BASE_URL")
-        or os.environ.get("GEMINI_RELAY_BASE_URL")
         or "https://api.openai.com"
     ).strip().rstrip("/")
 
@@ -368,7 +326,6 @@ def resolve_gpt_image_2_model(default_model: str = "gpt-image-2") -> str:
     load_env()
     return (
         os.environ.get("GPT_IMAGE_2_MODEL")
-        or os.environ.get("OPENAI_IMAGE_MODEL")
         or str(default_model or "gpt-image-2")
     ).strip()
 
@@ -377,7 +334,6 @@ def resolve_gpt_image_2_endpoint(default_endpoint: str = "/v1/images/generations
     load_env()
     endpoint = (
         os.environ.get("GPT_IMAGE_2_GENERATIONS_ENDPOINT")
-        or os.environ.get("OPENAI_IMAGE_GENERATIONS_ENDPOINT")
         or default_endpoint
         or "/v1/images/generations"
     )
@@ -389,7 +345,6 @@ def resolve_gpt_image_2_edit_endpoint(default_endpoint: str = "/v1/images/edits"
     load_env()
     endpoint = (
         os.environ.get("GPT_IMAGE_2_EDITS_ENDPOINT")
-        or os.environ.get("OPENAI_IMAGE_EDITS_ENDPOINT")
         or default_endpoint
         or "/v1/images/edits"
     )
@@ -1176,8 +1131,8 @@ def resolve_tencent_cos_config() -> dict:
     load_env()
     bucket = str(os.environ.get("TENCENT_COS_BUCKET") or "").strip()
     region = str(os.environ.get("TENCENT_COS_REGION") or "").strip()
-    secret_id = str(os.environ.get("TENCENT_SECRET_ID") or os.environ.get("TENCENT_COS_SECRET_ID") or "").strip()
-    secret_key = str(os.environ.get("TENCENT_SECRET_KEY") or os.environ.get("TENCENT_COS_SECRET_KEY") or "").strip()
+    secret_id = str(os.environ.get("TENCENT_SECRET_ID") or "").strip()
+    secret_key = str(os.environ.get("TENCENT_SECRET_KEY") or "").strip()
     prefix = str(os.environ.get("TENCENT_COS_PREFIX") or "seedance-face-review/").strip().lstrip("/")
     expires = int(os.environ.get("TENCENT_COS_SIGN_EXPIRES_SECONDS") or "3600")
     if prefix and not prefix.endswith("/"):
