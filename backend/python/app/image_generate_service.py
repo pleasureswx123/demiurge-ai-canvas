@@ -72,7 +72,7 @@ IMAGE_MODEL_MAP = {
     },
 }
 
-# 鍓嶇 UI model 鍚?鈫?Ark 鐪熷疄妯″瀷 ID 鏄犲皠
+# Frontend UI model name -> Ark API model ID mapping.
 VIDEO_MODEL_TO_ARK: dict[str, str] = {
     "wan2.7-i2v": "doubao-seedance-2-0-260128",
     "seedance-2.0": "doubao-seedance-2-0-260128",
@@ -399,7 +399,9 @@ def resolve_gpt_image_2_edit_endpoint(default_endpoint: str = "/v1/images/edits"
 
 def resolve_gpt_image_2_url(endpoint: str) -> str:
     """
-    涓?VectorEngine 涓€鑷达細VECTORENGINE_BASE_URL 甯镐负 .../v1锛岃嫢鍐嶆嫾 /v1/images/... 浼氬彉鎴?/v1/v1/... 瀵艰嚧 401/404銆?    褰?base 宸蹭互 /v1 缁撳熬涓?endpoint 浠?/v1/ 寮€澶存椂锛屽幓鎺?endpoint 鐨勫墠缂€ /v1銆?    """
+    Keep VectorEngine-compatible base URLs stable: when the base URL already
+    ends with /v1, avoid appending another /v1 from the endpoint.
+    """
     base_url = resolve_gpt_image_2_base_url()
     normalized_endpoint = endpoint if str(endpoint).startswith("/") else f"/{endpoint}"
     base_lower = base_url.lower().rstrip("/")
@@ -423,7 +425,7 @@ def send_json(handler: BaseHTTPRequestHandler, status_code: int, payload: dict):
     handler.send_response(status_code)
     handler.send_header("Content-Type", "application/json; charset=utf-8")
     handler.send_header("Access-Control-Allow-Origin", "*")
-    # 鍚?X-Project-Slug锛氬惁鍒欐祻瑙堝櫒璺ㄥ煙 POST锛堝惈鑷畾涔夊ご锛夐妫€浼氬け璐ワ紝鐢熷浘/鐢熻棰戣姹傝鎷︽埅
+    # Allow X-Project-Slug so browser preflight succeeds for generation requests.
     handler.send_header("Access-Control-Allow-Headers", "Content-Type, X-Project-Slug")
     handler.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
     handler.end_headers()
@@ -482,7 +484,7 @@ def guess_extension_from_response(response: requests.Response, fallback: str = "
 
 def normalize_image_input(image_value: str) -> str:
     if not image_value:
-        raise ValueError("鏀跺埌绌虹殑鍥惧儚杈撳叆")
+        raise ValueError("收到空的图像输入")
     candidate = str(image_value).strip()
     if candidate.startswith("data:image/") and "," in candidate:
         return candidate
@@ -505,9 +507,9 @@ def build_doubao_payload(request_body: dict) -> dict:
     input_images = request_body.get("input_images") or []
 
     if not prompt:
-        raise ValueError("prompt 涓嶈兘涓虹┖")
+        raise ValueError("prompt 不能为空")
     if model_cfg.get("backend") != "volcengine_ark":
-        raise ValueError(f"褰撳墠杩樻病鏈夊疄鐜版ā鍨嬪垎鏀細{selected_model}")
+        raise ValueError(f"当前还没有实现模型分支：{selected_model}")
 
     payload = {
         "model": model_cfg.get("api_model") or "doubao-seedream-5-0-260128",
@@ -527,7 +529,7 @@ def build_doubao_payload(request_body: dict) -> dict:
 def build_generate_content_request(request_body: dict) -> dict:
     prompt = str(request_body.get("prompt") or "").strip()
     if not prompt:
-        raise ValueError("prompt 涓嶈兘涓虹┖")
+        raise ValueError("prompt 不能为空")
 
     parts: list[dict] = []
     for raw_img in request_body.get("input_images") or []:
@@ -790,7 +792,7 @@ def frontend_image_to_bytes(image_value: str) -> tuple[bytes, str, str]:
         raw_bytes = base64.b64decode(normalized)
         return raw_bytes, "image/png", ".png"
     except (binascii.Error, ValueError):
-        raise RuntimeError("GPT Image 2 杈撳叆鍥剧墖鏍煎紡鏃犳硶璇嗗埆")
+        raise RuntimeError("GPT Image 2 输入图片格式无法识别")
 
 
 def extract_openai_images_result(response_json: dict) -> tuple[bytes | None, str | None, str | None]:
@@ -815,7 +817,7 @@ def generate_image_via_gemini(request_body: dict, model_cfg: dict) -> dict:
     prompt = str(request_body.get("prompt") or "").strip()
     ui_model_label = normalize_ui_image_model(request_body.get("model"))
     if not prompt:
-        raise ValueError("prompt 涓嶈兘涓虹┖")
+        raise ValueError("prompt 不能为空")
 
     request_json = build_generate_content_request(request_body)
     response_json = call_gemini_generate_content(
@@ -843,7 +845,7 @@ def generate_image_via_vectorengine(request_body: dict, model_cfg: dict) -> dict
     prompt = str(request_body.get("prompt") or "").strip()
     ui_model_label = normalize_ui_image_model(request_body.get("model"))
     if not prompt:
-        raise ValueError("prompt 涓嶈兘涓虹┖")
+        raise ValueError("prompt 不能为空")
 
     api_model = resolve_vectorengine_model(str(model_cfg.get("api_model") or "gemini-3-pro-image-preview"))
     endpoint = resolve_vectorengine_endpoint(
@@ -888,7 +890,7 @@ def generate_image_via_openai_images(request_body: dict, model_cfg: dict) -> dic
     prompt = str(request_body.get("prompt") or "").strip()
     ui_model_label = normalize_ui_image_model(request_body.get("model"))
     if not prompt:
-        raise ValueError("prompt 涓嶈兘涓虹┖")
+        raise ValueError("prompt 不能为空")
 
     key = resolve_gpt_image_2_api_key()
     if not key:
@@ -1044,7 +1046,7 @@ def route_image_generation(request_body: dict) -> dict:
     raise ValueError("Missing image model name")
 
 
-# 鈹€鈹€ Video generation 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+# Video generation
 
 def download_video_file(video_url: str, prefix: str = "video") -> dict:
     """Download a video and save it to the outputs directory."""
@@ -1084,9 +1086,9 @@ def _make_video_preview_result(video_url: str) -> dict:
         }
 
 
-# 鈹€鈹€ DashScope wan2.7-i2v 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+# DashScope wan2.7-i2v
 
-# 鈹€鈹€ KK-AI Seedance 2.0 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+# KK-AI Seedance 2.0
 
 def _dig_first(obj, paths: list[list[object]], default=None):
     for path_items in paths:
@@ -1741,7 +1743,7 @@ def query_video_task_dashscope(raw_task_id: str) -> dict:
     return result
 
 
-# 鈹€鈹€ Ark Seedance锛堝鐢細褰撴病鏈?DASHSCOPE_API_KEY 鏃讹級 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+# Ark Seedance fallback when DashScope is unavailable
 
 def submit_video_task_ark(
     prompt: str,
@@ -1845,7 +1847,7 @@ def query_video_task_ark(raw_task_id: str) -> dict:
     if task_status == "SUCCEEDED":
         video_url = (data.get("content") or {}).get("video_url", "")
         if not video_url:
-            raise RuntimeError("浠诲姟鎴愬姛浣嗘湭杩斿洖 video_url")
+            raise RuntimeError("任务成功但未返回 video_url")
         result.update(_make_video_preview_result(video_url))
 
     elif task_status == "FAILED":
@@ -1860,13 +1862,13 @@ def query_video_task_ark(raw_task_id: str) -> dict:
     return result
 
 
-# 鈹€鈹€ Unified entry points 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+# Unified entry points
 
 def submit_video_task(request_body: dict) -> dict:
     """Submit a video task to the configured provider."""
     prompt = str(request_body.get("prompt") or "").strip()
     if not prompt:
-        raise ValueError("prompt 涓嶈兘涓虹┖")
+        raise ValueError("prompt 不能为空")
 
     ui_model = str(request_body.get("model") or "seedance-2.0").strip()
     ratio = str(request_body.get("ratio") or "16:9").strip()
@@ -1888,7 +1890,7 @@ def submit_video_task(request_body: dict) -> dict:
 
     if provider == "dashscope":
         if not resolve_dashscope_api_key():
-            raise ValueError("褰撳墠瑙嗛閫氶亾琚缃负 DashScope锛屼絾缂哄皯 DASHSCOPE_API_KEY")
+            raise ValueError("当前视频通道被设置为 DashScope，但缺少 DASHSCOPE_API_KEY")
         return submit_video_task_dashscope(prompt, input_images, resolution, duration)
 
     return submit_video_task_ark(
@@ -1925,7 +1927,7 @@ def serve_video_file(handler: BaseHTTPRequestHandler, path_rest: str, head_only:
     segments = [s for s in path_rest.strip("/").split("/") if s]
     safe_name = Path(segments[-1]).name if segments else ""
     if not safe_name:
-        send_json(handler, 404, {"error": "鏃犳晥璺緞"})
+        send_json(handler, 404, {"error": "无效路径"})
         return
 
     if len(segments) == 2:
@@ -1935,7 +1937,7 @@ def serve_video_file(handler: BaseHTTPRequestHandler, path_rest: str, head_only:
             try:
                 file_path.relative_to(PROJECTS_ROOT.resolve())
             except ValueError:
-                send_json(handler, 404, {"error": "璺緞闈炴硶"})
+                send_json(handler, 404, {"error": "路径非法"})
                 return
         else:
             file_path = OUTPUTS_DIR / safe_name
@@ -1943,7 +1945,7 @@ def serve_video_file(handler: BaseHTTPRequestHandler, path_rest: str, head_only:
         file_path = OUTPUTS_DIR / safe_name
 
     if not file_path.exists():
-        send_json(handler, 404, {"error": f"鏂囦欢涓嶅瓨鍦細{safe_name}"})
+        send_json(handler, 404, {"error": f"文件不存在：{safe_name}"})
         return
 
     content_type = mimetypes.guess_type(str(file_path))[0] or "video/mp4"
@@ -2020,7 +2022,7 @@ def serve_video_file(handler: BaseHTTPRequestHandler, path_rest: str, head_only:
             remaining -= len(chunk)
 
 
-# 鈹€鈹€ HTTP Handler 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+# HTTP Handler
 
 class ImageGenerateHandler(BaseHTTPRequestHandler):
     def log_message(self, fmt, *args):  # suppress default access log noise

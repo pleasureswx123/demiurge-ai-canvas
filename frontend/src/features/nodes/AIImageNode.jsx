@@ -1980,7 +1980,7 @@ const AIImageNode = ({ data, selected = false }) => {
       if (cancelRequested || abortController.signal.aborted) return;
       const result = await response.json();
       if (!response.ok) {
-        throw new Error(result?.error || '鐢熸垚澶辫触');
+        throw new Error(result?.error || '生成失败');
       }
 
       setProgress(82);
@@ -3334,7 +3334,7 @@ const AIImageNode = ({ data, selected = false }) => {
           document.body
         )}
 
-      {/* 鈹€鈹€ Crop dropdown (portal so it's never clipped by node stacking) 鈹€鈹€ */}
+      {/* Crop dropdown (portal so it is never clipped by node stacking) */}
       {showCropMenu && createPortal(
         <div
           data-crop-dropdown
@@ -3375,7 +3375,7 @@ const AIImageNode = ({ data, selected = false }) => {
         document.body
       )}
 
-      {/* 鈹€鈹€ Crop modal 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€ */}
+      {/* Crop modal */}
       {showCropModal &&
         importedImage &&
         createPortal(
